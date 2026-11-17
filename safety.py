@@ -1,13 +1,22 @@
 import csv
 import json
+import sys
 
 SEUIL = -2.5
 evenements = []
 
-with open("data/accelerometer_data.csv") as fichier:
+fichier_csv = "data/accelerometer_data.csv"
+if len(sys.argv) > 1:
+    fichier_csv = sys.argv[1]
+
+with open(fichier_csv) as fichier:
     lecteur = csv.DictReader(fichier)
     for ligne in lecteur:
-        acc_y = float(ligne["acc_y"])
+        try:
+            acc_y = float(ligne["acc_y"])
+        except (KeyError, TypeError, ValueError):
+            print("[ATTENTION] Mesure", ligne.get("timestamp", "?"), ": valeur invalide, ignorée")
+            continue
         if acc_y < SEUIL:
             print("[FREINAGE VIOLENT]", ligne["timestamp"], acc_y)
             evenements.append({"timestamp": ligne["timestamp"], "acc_y": acc_y}) 
